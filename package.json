@@ -15,9 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "mocha": "^3.5.0",
-    "nan": "^2.6.2"
-  },
-  "devDependencies": {
+    "nan": "^2.6.2",
     "temp": "^0.8.3"
   }
 }

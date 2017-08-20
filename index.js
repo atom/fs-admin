@@ -1,5 +1,7 @@
+const fs = require('fs')
 const {spawn} = require('child_process')
 const EventEmitter = require('events')
+const temp = require('temp')
 const binding = require('./build/Release/fs_admin.node')
 
 module.exports.testMode = false;
@@ -65,10 +67,39 @@ switch (process.platform) {
   }
 
   case 'win32': {
+    class WriteStream extends EventEmitter {
+      constructor (fd, tempPath, destinationPath) {
+        super()
+        this.tempPath = tempPath
+        this.destinationPath = destinationPath
+        this.writeStream = fs.createWriteStream(null, {fd: fd})
+      }
+
+      write (chunk, encoding, callback) {
+        this.writeStream.write(chunk, encoding, callback)
+      }
+
+      end (callback) {
+        this.writeStream.end(() => {
+          binding.spawnAsAdmin(
+            'move',
+            [this.tempPath, this.destinationPath],
+            wrapCallback('move', callback)
+          )
+        })
+      }
+    }
+
+    module.exports.createWriteStream = function (filePath) {
+      const {fd, path} = temp.openSync('fs-admin-write')
+      return new WriteStream(fd, path, filePath)
+    }
+
     module.exports.symlink = function (target, filePath, callback) {
       binding.spawnAsAdmin(
         'mklink',
         ['/j', target, filePath],
+        module.exports.testMode,
         wrapCallback('mklink', callback)
       )
     }
@@ -77,6 +108,7 @@ switch (process.platform) {
       binding.spawnAsAdmin(
         'del',
         ['/F', filePath],
+        module.exports.testMode,
         wrapCallback('del', callback)
       )
     }
