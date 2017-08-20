@@ -28,7 +28,7 @@ describe('fs-admin', function () {
 
       if (!fsAdmin.testMode) {
         fs.chmodSync(filePath, 0444)
-        assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES/)
+        assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
       }
 
       fs.createReadStream(__filename)
@@ -46,7 +46,7 @@ describe('fs-admin', function () {
 
       if (!fsAdmin.testMode) {
         fs.chmodSync(path.dirname(filePath), 0444)
-        assert.throws(() => fs.unlinkSync(filePath, 'hi'), /EACCES/)
+        assert.throws(() => fs.unlinkSync(filePath, 'hi'), /EACCES|EPERM/)
       }
 
       fsAdmin.unlink(filePath, (error) => {

@@ -60,13 +60,13 @@ void *StartChildProcess(const string &command, const vector<string> &args, bool 
     parameters += QuoteCmdArg(args[i]) + ' ';
   }
 
-  SHELLEXECUTEINFO shell_execute_info;
+  SHELLEXECUTEINFO shell_execute_info = {};
   shell_execute_info.cbSize = sizeof(shell_execute_info);
   shell_execute_info.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
   shell_execute_info.lpVerb = test_mode ? "open" : "runas";
   shell_execute_info.lpFile = command.c_str();
   shell_execute_info.lpParameters = parameters.c_str();
-  shell_execute_info.nShow = SW_NORMAL;
+  shell_execute_info.nShow = SW_HIDE;
 
   if (::ShellExecuteEx(&shell_execute_info) == FALSE || !shell_execute_info.hProcess) {
     return nullptr;

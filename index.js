@@ -17,7 +17,6 @@ switch (process.platform) {
           if (exitCode !== 0) {
             this.emit('error', new Error(`Authopen failed with exit code: ${exitCode}`))
           }
-
           this.emit('end')
         })
       }
@@ -27,8 +26,8 @@ switch (process.platform) {
       }
 
       end (callback) {
+        if (callback) this.on('end', callback)
         this.childProcess.stdin.end()
-        if (callback) this.childProcess.on('exit', callback)
       }
     }
 
@@ -80,11 +79,18 @@ switch (process.platform) {
       }
 
       end (callback) {
+        if (callback) this.on('end', callback)
         this.writeStream.end(() => {
           binding.spawnAsAdmin(
-            'move',
-            [this.tempPath, this.destinationPath],
-            wrapCallback('move', callback)
+            'cmd',
+            ['/c', 'move', this.tempPath, this.destinationPath],
+            module.exports.testMode,
+            (exitCode) => {
+              if (exitCode !== 0) {
+                this.emit('error', new Error('move failed with exit code ' + exitCode))
+              }
+              this.emit('end')
+            }
           )
         })
       }
@@ -97,8 +103,8 @@ switch (process.platform) {
 
     module.exports.symlink = function (target, filePath, callback) {
       binding.spawnAsAdmin(
-        'mklink',
-        ['/j', target, filePath],
+        'cmd',
+        ['/c', 'mklink', '/j', filePath, target],
         module.exports.testMode,
         wrapCallback('mklink', callback)
       )
@@ -106,8 +112,8 @@ switch (process.platform) {
 
     module.exports.unlink = function (filePath, callback) {
       binding.spawnAsAdmin(
-        'del',
-        ['/F', filePath],
+        'cmd',
+        ['/c', 'del', '/F', filePath],
         module.exports.testMode,
         wrapCallback('del', callback)
       )
