@@ -20,7 +20,7 @@ describe('fs-admin', function () {
   })
 
   // Allow enough time for typing credentials
-  this.timeout(10000)
+  if (!fsAdmin.testMode) this.timeout(10000)
 
   describe('createWriteStream', () => {
     it('writes to the given file as the admin user', (done) => {
@@ -45,11 +45,11 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 0444)
-        assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES/)
+        fs.chmodSync(path.dirname(filePath), 0444)
+        assert.throws(() => fs.unlinkSync(filePath, 'hi'), /EACCES/)
       }
 
-      fs.unlink(filePath, (error) => {
+      fsAdmin.unlink(filePath, (error) => {
         assert.equal(error, null)
         assert(!fs.existsSync(filePath))
         done()
