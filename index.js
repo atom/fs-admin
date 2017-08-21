@@ -56,7 +56,7 @@ switch (process.platform) {
     module.exports.unlink = function (filePath, callback) {
       binding.spawnAsAdmin(
         '/bin/rm',
-        ['-f', filePath],
+        ['-rf', filePath],
         module.exports.testMode,
         wrapCallback('rm', callback)
       )
@@ -128,12 +128,24 @@ switch (process.platform) {
     }
 
     module.exports.unlink = function (filePath, callback) {
-      binding.spawnAsAdmin(
-        'cmd',
-        ['/c', 'del', '/F', filePath],
-        module.exports.testMode,
-        wrapCallback('del', callback)
-      )
+      fs.stat(filePath, (error, status) => {
+        if (error) return callback(error)
+        if (status.isDirectory()) {
+          binding.spawnAsAdmin(
+            'cmd',
+            ['/c', 'rmdir', '/s', '/q', filePath],
+            module.exports.testMode,
+            wrapCallback('rmdir', callback)
+          )
+        } else {
+          binding.spawnAsAdmin(
+            'cmd',
+            ['/c', 'del', '/f', '/q', filePath],
+            module.exports.testMode,
+            wrapCallback('del', callback)
+          )
+        }
+      })
     }
 
     module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {

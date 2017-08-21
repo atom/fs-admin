@@ -46,8 +46,25 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
+        fs.chmodSync(filePath, 0444)
         fs.chmodSync(path.dirname(filePath), 0444)
-        assert.throws(() => fs.unlinkSync(filePath, 'hi'), /EACCES|EPERM/)
+        assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
+      }
+
+      fsAdmin.unlink(filePath, (error) => {
+        assert.equal(error, null)
+        assert(!fs.existsSync(filePath))
+        done()
+      })
+    })
+
+    it('deletes the given directory as the admin user', (done) => {
+      fs.mkdirSync(filePath)
+
+      if (!fsAdmin.testMode) {
+        fs.chmodSync(filePath, 0444)
+        fs.chmodSync(path.dirname(filePath), 0444)
+        assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
       }
 
       fsAdmin.unlink(filePath, (error) => {
