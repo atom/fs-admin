@@ -1,7 +1,6 @@
 const fs = require('fs')
 const {spawn} = require('child_process')
-const {Writable} = require('stream')
-const temp = require('temp')
+const EventEmitter = require('events')
 const binding = require('./build/Release/fs_admin.node')
 
 module.exports.testMode = false;
@@ -10,25 +9,33 @@ switch (process.platform) {
   case 'darwin': {
     module.exports.createWriteStream = function (filePath) {
       let authopen;
+
       if (module.exports.testMode) {
         authopen = spawn('/bin/dd', ['of=' + filePath])
       } else {
-        authopen = spawn('/usr/libexec/authopen', ['-extauth', '-w', '-cz', filePath])
-        authopen.stdin.write(binding.getAuthorizationForm())
+        const authorizationForm = binding.getAuthorizationForm()
+        authopen = spawn('/usr/libexec/authopen', ['-extauth', '-w', '-c', filePath])
+        authopen.stdin.write(authorizationForm)
       }
 
-      const result = new Writable({
-        write (chunk, encoding, callback) {
-          authopen.stdin.write(chunk, encoding, callback)
-        },
+      const result = new EventEmitter()
 
-        final (callback) {
-          authopen.stdin.end()
-          authopen.on('exit', wrapCallback('authopen', callback))
+      result.write = (chunk, encoding, callback) => {
+        authopen.stdin.write(chunk, encoding, callback)
+      }
+
+      result.end = (callback) => {
+        if (callback) result.on('finish', callback)
+        authopen.stdin.end()
+      }
+
+      authopen.on('exit', (exitCode) => {
+        if (exitCode !== 0) {
+          result.emit('error', new Error('authopen exited with code ' + exitCode))
         }
+        result.emit('finish')
       })
 
-      authopen.on('error', (error) => result.emit('error', error))
       return result
     }
 
