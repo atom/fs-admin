@@ -55,12 +55,13 @@ void *StartChildProcess(const string &command, const vector<string> &args, bool 
   if (test_mode) {
     int pid = fork();
     switch (pid) {
-      case 0:
-        execvp(command.c_str(), argv.data());
-        abort();
-
       case -1:
         return nullptr;
+
+      case 0:
+        argv.insert(argv.begin(), const_cast<char *>(command.c_str()));
+        execvp(command.c_str(), argv.data());
+        abort();
 
       default:
         int *result = new int;

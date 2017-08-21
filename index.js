@@ -62,6 +62,23 @@ switch (process.platform) {
       )
     }
 
+    module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
+      binding.spawnAsAdmin(
+        '/bin/rm',
+        ['-r', '-f', destinationPath],
+        module.exports.testMode,
+        wrapCallback('rm', (error) => {
+          if (error) return callback(error)
+          binding.spawnAsAdmin(
+            '/bin/cp',
+            ['-r', sourcePath, destinationPath],
+            module.exports.testMode,
+            wrapCallback('cp', callback)
+          )
+        })
+      )
+    }
+
     break
   }
 
@@ -116,6 +133,29 @@ switch (process.platform) {
         ['/c', 'del', '/F', filePath],
         module.exports.testMode,
         wrapCallback('del', callback)
+      )
+    }
+
+    module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
+      binding.spawnAsAdmin(
+        'cmd',
+        ['/c', 'rmdir', destinationPath, '/s', '/q'],
+        module.exports.testMode,
+        wrapCallback('rmdir', (error) => {
+          if (error) return callback(error)
+          binding.spawnAsAdmin(
+            'cmd',
+            ['/c', 'robocopy', sourcePath, destinationPath, '/e'],
+            module.exports.testMode,
+            (exitCode) => {
+              if (exitCode >= 8) {
+                callback(new Error('robocopy failed with exit status ' + exitCode))
+              } else {
+                callback()
+              }
+            }
+          )
+        })
       )
     }
   }

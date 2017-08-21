@@ -13,10 +13,11 @@ if (process.platform !== 'win32' && process.platform !== 'darwin') {
 }
 
 describe('fs-admin', function () {
-  let filePath
+  let dirPath, filePath
 
   beforeEach(() => {
-    filePath = path.join(temp.mkdirSync('fs-admin-test'), 'file')
+    dirPath = temp.mkdirSync('fs-admin-test')
+    filePath = path.join(dirPath, 'file')
   })
 
   // Allow enough time for typing credentials
@@ -67,6 +68,28 @@ describe('fs-admin', function () {
         }
 
         assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename))
+        done()
+      })
+    })
+  })
+
+  describe('recursiveCopy', () => {
+    it('copies the given folder to the given location as the admin user', (done) => {
+      const sourcePath = path.join(dirPath, 'src-dir')
+      fs.mkdirSync(sourcePath)
+      fs.mkdirSync(path.join(sourcePath, 'dir1'))
+      fs.writeFileSync(path.join(sourcePath, 'dir1', 'file1.txt'), '1')
+      fs.writeFileSync(path.join(sourcePath, 'dir1', 'file2.txt'), '2')
+
+      const destinationPath = path.join(dirPath, 'dest-dir')
+      fs.mkdirSync(destinationPath)
+      fs.writeFileSync(path.join(destinationPath, 'other-file.txt'), '3')
+
+      fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
+        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
+        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
+        assert(!fs.existsSync(path.join(destinationPath, 'other-file.txt')))
+        assert.equal(error, null)
         done()
       })
     })
