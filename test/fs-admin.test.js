@@ -85,6 +85,12 @@ describe('fs-admin', function () {
       fs.mkdirSync(destinationPath)
       fs.writeFileSync(path.join(destinationPath, 'other-file.txt'), '3')
 
+      if (!fsAdmin.testMode) {
+        fs.chmodSync(destinationPath, 0444)
+        assert.throws(() => fs.unlinkSync(destinationPath), /EACCES|EPERM/)
+        assert.throws(() => fs.mkdirSync(path.join(destinationPath, 'dir1')), /EACCES|EPERM/)
+      }
+
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
         assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
         assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
