@@ -24,6 +24,8 @@ describe('fs-admin', function () {
   if (!fsAdmin.testMode) this.timeout(10000)
 
   describe('createWriteStream', () => {
+    if (process.platform !== 'darwin') return
+
     it('writes to the given file as the admin user', (done) => {
       fs.writeFileSync(filePath, '')
 
@@ -34,7 +36,7 @@ describe('fs-admin', function () {
 
       fs.createReadStream(__filename)
         .pipe(fsAdmin.createWriteStream(filePath))
-        .on('end', () => {
+        .on('finish', () => {
           assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
           done()
         })
