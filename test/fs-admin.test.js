@@ -41,6 +41,37 @@ describe('fs-admin', function () {
           done()
         })
     })
+
+    it('does not prompt multiple times when concurrent writes are requested', (done) => {
+      fsAdmin.clearAuthorizationCache();
+
+      const filePath2 = path.join(dirPath, 'file2')
+      const filePath3 = path.join(dirPath, 'file3')
+
+      fs.writeFileSync(filePath, '')
+      fs.writeFileSync(filePath2, '')
+      fs.writeFileSync(filePath3, '')
+
+      if (!fsAdmin.testMode) {
+        fs.chmodSync(filePath, 0444)
+        fs.chmodSync(filePath2, 0444)
+        fs.chmodSync(filePath3, 0444)
+        assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
+        assert.throws(() => fs.writeFileSync(filePath2, 'hi'), /EACCES|EPERM/)
+        assert.throws(() => fs.writeFileSync(filePath3, 'hi'), /EACCES|EPERM/)
+      }
+
+      Promise.all([filePath, filePath2, filePath3].map((filePath) =>
+        new Promise((resolve) =>
+          fs.createReadStream(__filename)
+            .pipe(fsAdmin.createWriteStream(filePath))
+            .on('finish', () => {
+              assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
+              resolve()
+            })
+        )
+      )).then(() => done())
+    })
   })
 
   describe('unlink', () => {

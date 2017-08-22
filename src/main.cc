@@ -33,6 +33,10 @@ void GetAuthorizationForm(const Nan::FunctionCallbackInfo<Value>& info) {
   info.GetReturnValue().Set(buffer.ToLocalChecked());
 }
 
+void ClearAuthorizationCache(const Nan::FunctionCallbackInfo<Value>& info) {
+  ClearAuthorizationCache();
+}
+
 void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   if (!info[0]->IsString()) {
     Nan::ThrowTypeError("Command must be a string");
@@ -75,6 +79,7 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
 
 void Init(Handle<Object> exports) {
   Nan::SetMethod(exports, "getAuthorizationForm", GetAuthorizationForm);
+  Nan::SetMethod(exports, "clearAuthorizationCache", ClearAuthorizationCache);
   Nan::SetMethod(exports, "spawnAsAdmin", SpawnAsAdmin);
 }
 

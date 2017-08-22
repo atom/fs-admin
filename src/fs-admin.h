@@ -8,6 +8,8 @@ namespace fs_admin {
 
 std::string CreateAuthorizationForm();
 
+void ClearAuthorizationCache();
+
 void *StartChildProcess(const std::string &command, const std::vector<std::string> &args, bool test_mode);
 
 int WaitForChildProcessToExit(void *, bool test_mode);

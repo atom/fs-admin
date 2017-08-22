@@ -7,15 +7,19 @@ module.exports.testMode = false;
 
 switch (process.platform) {
   case 'darwin': {
+    module.exports.clearAuthorizationCache = binding.clearAuthorizationCache
+
     module.exports.createWriteStream = function (filePath) {
       let authopen;
+
+      // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
+      binding.spawnAsAdmin('/bin/echo', [], module.exports.testMode, () => {})
 
       if (module.exports.testMode) {
         authopen = spawn('/bin/dd', ['of=' + filePath])
       } else {
-        const authorizationForm = binding.getAuthorizationForm()
         authopen = spawn('/usr/libexec/authopen', ['-extauth', '-w', '-c', filePath])
-        authopen.stdin.write(authorizationForm)
+        authopen.stdin.write(binding.getAuthorizationForm())
       }
 
       const result = new EventEmitter()

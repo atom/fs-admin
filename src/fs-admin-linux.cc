@@ -14,5 +14,6 @@ int WaitForChildProcessToExit(void *child_process, bool test_mode) {
 }
 
 string CreateAuthorizationForm() { return ""; }
+void ClearAuthorizationCache() {}
 
 }  // namespace fs_admin

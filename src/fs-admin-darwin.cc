@@ -12,9 +12,13 @@ namespace fs_admin {
 using std::string;
 using std::vector;
 
-AuthorizationRef GetAuthorizationRef() {
-  static AuthorizationRef authorization_ref = nullptr;
+namespace {
 
+AuthorizationRef authorization_ref = nullptr;
+
+}
+
+AuthorizationRef GetAuthorizationRef() {
   if (!authorization_ref) {
     OSStatus status = AuthorizationCreate(
       NULL,
@@ -27,6 +31,13 @@ AuthorizationRef GetAuthorizationRef() {
   }
 
   return authorization_ref;
+}
+
+void ClearAuthorizationCache() {
+  if (authorization_ref) {
+    AuthorizationFree(authorization_ref, kAuthorizationFlagDefaults);
+    authorization_ref = nullptr;
+  }
 }
 
 string CreateAuthorizationForm() {
