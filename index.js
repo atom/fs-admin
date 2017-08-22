@@ -3,7 +3,7 @@ const {spawn} = require('child_process')
 const EventEmitter = require('events')
 const binding = require('./build/Release/fs_admin.node')
 
-module.exports.testMode = false;
+module.exports.testMode = false
 
 switch (process.platform) {
   case 'darwin': {
@@ -12,7 +12,7 @@ switch (process.platform) {
     }
 
     module.exports.createWriteStream = function (filePath) {
-      let authopen;
+      let authopen
 
       // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
       if (!binding.spawnAsAdmin('/bin/echo', [], module.exports.testMode, () => {})) {
@@ -146,8 +146,8 @@ switch (process.platform) {
 
 function wrapCallback (commandName, callback) {
   return (exitCode) => callback(
-    exitCode === 0 ?
-      null :
-      new Error(commandName + ' failed with exit status ' + exitCode)
+    exitCode === 0
+      ? null
+      : new Error(commandName + ' failed with exit status ' + exitCode)
   )
 }

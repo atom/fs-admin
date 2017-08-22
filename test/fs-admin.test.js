@@ -1,8 +1,7 @@
 const fs = require('fs')
-const os = require('os')
 const path = require('path')
 const assert = require('assert')
-const temp  = require('temp')
+const temp = require('temp')
 const fsAdmin = require('..')
 
 // Comment this out to test with actual privilege escalation.
@@ -30,7 +29,7 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 0444)
+        fs.chmodSync(filePath, 444)
         assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
       }
 
@@ -43,7 +42,7 @@ describe('fs-admin', function () {
     })
 
     it('does not prompt multiple times when concurrent writes are requested', (done) => {
-      fsAdmin.clearAuthorizationCache();
+      fsAdmin.clearAuthorizationCache()
 
       const filePath2 = path.join(dirPath, 'file2')
       const filePath3 = path.join(dirPath, 'file3')
@@ -53,9 +52,9 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath3, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 0444)
-        fs.chmodSync(filePath2, 0444)
-        fs.chmodSync(filePath3, 0444)
+        fs.chmodSync(filePath, 444)
+        fs.chmodSync(filePath2, 444)
+        fs.chmodSync(filePath3, 444)
         assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
         assert.throws(() => fs.writeFileSync(filePath2, 'hi'), /EACCES|EPERM/)
         assert.throws(() => fs.writeFileSync(filePath3, 'hi'), /EACCES|EPERM/)
@@ -79,8 +78,8 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 0444)
-        fs.chmodSync(path.dirname(filePath), 0444)
+        fs.chmodSync(filePath, 444)
+        fs.chmodSync(path.dirname(filePath), 444)
         assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
       }
 
@@ -95,8 +94,8 @@ describe('fs-admin', function () {
       fs.mkdirSync(filePath)
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 0444)
-        fs.chmodSync(path.dirname(filePath), 0444)
+        fs.chmodSync(filePath, 444)
+        fs.chmodSync(path.dirname(filePath), 444)
         assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
       }
 
@@ -136,7 +135,7 @@ describe('fs-admin', function () {
       fs.writeFileSync(path.join(destinationPath, 'other-file.txt'), '3')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(destinationPath, 0444)
+        fs.chmodSync(destinationPath, 444)
         assert.throws(() => fs.unlinkSync(destinationPath), /EACCES|EPERM/)
         assert.throws(() => fs.mkdirSync(path.join(destinationPath, 'dir1')), /EACCES|EPERM/)
       }
