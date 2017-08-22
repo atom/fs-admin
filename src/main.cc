@@ -72,9 +72,12 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 
   void *child_process = StartChildProcess(command, args, test_mode);
-  if (!child_process) return;
-
-  Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[3].As<Function>()), child_process, test_mode));
+  if (!child_process) {
+    info.GetReturnValue().Set(Nan::False());
+  } else {
+    Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[3].As<Function>()), child_process, test_mode));
+    info.GetReturnValue().Set(Nan::True());
+  }
 }
 
 void Init(Handle<Object> exports) {

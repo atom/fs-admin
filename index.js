@@ -13,7 +13,12 @@ switch (process.platform) {
       let authopen;
 
       // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
-      binding.spawnAsAdmin('/bin/echo', [], module.exports.testMode, () => {})
+      if (!binding.spawnAsAdmin('/bin/echo', [], module.exports.testMode, () => {})) {
+        const result = new EventEmitter()
+        result.write = result.end = function () {}
+        process.nextTick(() => result.emit('error', new Error('Failed to obtain credentials')))
+        return result
+      }
 
       if (module.exports.testMode) {
         authopen = spawn('/bin/dd', ['of=' + filePath])
