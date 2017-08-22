@@ -7,7 +7,9 @@ module.exports.testMode = false;
 
 switch (process.platform) {
   case 'darwin': {
-    module.exports.clearAuthorizationCache = binding.clearAuthorizationCache
+    module.exports.clearAuthorizationCache = function () {
+      binding.clearAuthorizationCache()
+    }
 
     module.exports.createWriteStream = function (filePath) {
       let authopen;
