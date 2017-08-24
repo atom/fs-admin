@@ -29,7 +29,7 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 444)
+        fs.chmodSync(filePath, 0o444)
         assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
       }
 
@@ -52,9 +52,9 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath3, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 444)
-        fs.chmodSync(filePath2, 444)
-        fs.chmodSync(filePath3, 444)
+        fs.chmodSync(filePath, 0o444)
+        fs.chmodSync(filePath2, 0o444)
+        fs.chmodSync(filePath3, 0o444)
         assert.throws(() => fs.writeFileSync(filePath, 'hi'), /EACCES|EPERM/)
         assert.throws(() => fs.writeFileSync(filePath2, 'hi'), /EACCES|EPERM/)
         assert.throws(() => fs.writeFileSync(filePath3, 'hi'), /EACCES|EPERM/)
@@ -96,8 +96,8 @@ describe('fs-admin', function () {
       fs.writeFileSync(filePath, '')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 444)
-        fs.chmodSync(path.dirname(filePath), 444)
+        fs.chmodSync(filePath, 0o444)
+        fs.chmodSync(path.dirname(filePath), 0o444)
         assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
       }
 
@@ -112,8 +112,8 @@ describe('fs-admin', function () {
       fs.mkdirSync(filePath)
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(filePath, 444)
-        fs.chmodSync(path.dirname(filePath), 444)
+        fs.chmodSync(filePath, 0o444)
+        fs.chmodSync(path.dirname(filePath), 0o444)
         assert.throws(() => fs.unlinkSync(filePath), /EACCES|EPERM/)
       }
 
@@ -154,7 +154,7 @@ describe('fs-admin', function () {
 
       if (!fsAdmin.testMode) {
         fs.writeFileSync(path.join(destinationPath, 'something'), '')
-        fs.chmodSync(path.join(destinationPath, 'something'), 444)
+        fs.chmodSync(path.join(destinationPath, 'something'), 0o444)
         assert.throws(() => fs.unlinkSync(destinationPath), /EACCES|EPERM/)
       }
 
