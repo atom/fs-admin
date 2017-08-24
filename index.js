@@ -122,23 +122,9 @@ switch (process.platform) {
     module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
       binding.spawnAsAdmin(
         'cmd',
-        ['/c', 'rmdir', destinationPath, '/s', '/q'],
+        ['/c', require.resolve('./src/copy-folder.cmd'), sourcePath, destinationPath],
         module.exports.testMode,
-        wrapCallback('rmdir', (error) => {
-          if (error) return callback(error)
-          binding.spawnAsAdmin(
-            'cmd',
-            ['/c', 'robocopy', sourcePath, destinationPath, '/e'],
-            module.exports.testMode,
-            (exitCode) => {
-              if (exitCode >= 8) {
-                callback(new Error('robocopy failed with exit status ' + exitCode))
-              } else {
-                callback()
-              }
-            }
-          )
-        })
+        wrapCallback('robocopy', callback)
       )
     }
   }

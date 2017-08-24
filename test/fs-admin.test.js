@@ -135,15 +135,32 @@ describe('fs-admin', function () {
       fs.writeFileSync(path.join(destinationPath, 'other-file.txt'), '3')
 
       if (!fsAdmin.testMode) {
-        fs.chmodSync(destinationPath, 444)
+        fs.writeFileSync(path.join(destinationPath, 'something'), '')
+        fs.chmodSync(path.join(destinationPath, 'something'), 444)
         assert.throws(() => fs.unlinkSync(destinationPath), /EACCES|EPERM/)
-        assert.throws(() => fs.mkdirSync(path.join(destinationPath, 'dir1')), /EACCES|EPERM/)
       }
 
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
         assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
         assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
         assert(!fs.existsSync(path.join(destinationPath, 'other-file.txt')))
+        assert.equal(error, null)
+        done()
+      })
+    })
+
+    it('works when there is nothing at the destination path', (done) => {
+      const sourcePath = path.join(dirPath, 'src-dir')
+      fs.mkdirSync(sourcePath)
+      fs.mkdirSync(path.join(sourcePath, 'dir1'))
+      fs.writeFileSync(path.join(sourcePath, 'dir1', 'file1.txt'), '1')
+      fs.writeFileSync(path.join(sourcePath, 'dir1', 'file2.txt'), '2')
+
+      const destinationPath = path.join(dirPath, 'dest-dir')
+
+      fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
+        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
+        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
         assert.equal(error, null)
         done()
       })
