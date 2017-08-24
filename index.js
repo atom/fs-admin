@@ -2,150 +2,153 @@ const fs = require('fs')
 const {spawn} = require('child_process')
 const EventEmitter = require('events')
 const binding = require('./build/Release/fs_admin.node')
+const fsAdmin = module.exports
 
-module.exports.testMode = false
+fsAdmin.testMode = false
 
 switch (process.platform) {
-  case 'darwin': {
-    module.exports.clearAuthorizationCache = function () {
-      binding.clearAuthorizationCache()
-    }
+  case 'darwin':
+    Object.assign(fsAdmin, {
+      clearAuthorizationCache () {
+        binding.clearAuthorizationCache()
+      },
 
-    module.exports.createWriteStream = function (filePath) {
-      let authopen
+      createWriteStream (filePath) {
+        let authopen
 
-      // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
-      if (!binding.spawnAsAdmin('/bin/echo', [], module.exports.testMode, () => {})) {
-        const result = new EventEmitter()
-        result.write = result.end = function () {}
-        process.nextTick(() => result.emit('error', new Error('Failed to obtain credentials')))
-        return result
-      }
-
-      if (module.exports.testMode) {
-        authopen = spawn('/bin/dd', ['of=' + filePath])
-      } else {
-        authopen = spawn('/usr/libexec/authopen', ['-extauth', '-w', '-c', filePath])
-        authopen.stdin.write(binding.getAuthorizationForm())
-      }
-
-      const result = new EventEmitter()
-
-      result.write = (chunk, encoding, callback) => {
-        authopen.stdin.write(chunk, encoding, callback)
-      }
-
-      result.end = (callback) => {
-        if (callback) result.on('finish', callback)
-        authopen.stdin.end()
-      }
-
-      authopen.on('exit', (exitCode) => {
-        if (exitCode !== 0) {
-          result.emit('error', new Error('authopen exited with code ' + exitCode))
+        // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
+        if (!binding.spawnAsAdmin('/bin/echo', [], fsAdmin.testMode, () => {})) {
+          const result = new EventEmitter()
+          result.write = result.end = function () {}
+          process.nextTick(() => result.emit('error', new Error('Failed to obtain credentials')))
+          return result
         }
-        result.emit('finish')
-      })
 
-      return result
-    }
-
-    module.exports.symlink = function (target, filePath, callback) {
-      binding.spawnAsAdmin(
-        '/bin/ln',
-        ['-s', target, filePath],
-        module.exports.testMode,
-        wrapCallback('ln', callback)
-      )
-    }
-
-    module.exports.unlink = function (filePath, callback) {
-      binding.spawnAsAdmin(
-        '/bin/rm',
-        ['-rf', filePath],
-        module.exports.testMode,
-        wrapCallback('rm', callback)
-      )
-    }
-
-    module.exports.makeTree = function (directoryPath, callback) {
-      binding.spawnAsAdmin(
-        '/bin/mkdir',
-        ['-p', directoryPath],
-        module.exports.testMode,
-        wrapCallback('mkdir', callback)
-      )
-    }
-
-    module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
-      binding.spawnAsAdmin(
-        '/bin/rm',
-        ['-r', '-f', destinationPath],
-        module.exports.testMode,
-        wrapCallback('rm', (error) => {
-          if (error) return callback(error)
-          binding.spawnAsAdmin(
-            '/bin/cp',
-            ['-r', sourcePath, destinationPath],
-            module.exports.testMode,
-            wrapCallback('cp', callback)
-          )
-        })
-      )
-    }
-
-    break
-  }
-
-  case 'win32': {
-    module.exports.symlink = function (target, filePath, callback) {
-      binding.spawnAsAdmin(
-        'cmd',
-        ['/c', 'mklink', '/j', filePath, target],
-        module.exports.testMode,
-        wrapCallback('mklink', callback)
-      )
-    }
-
-    module.exports.unlink = function (filePath, callback) {
-      fs.stat(filePath, (error, status) => {
-        if (error) return callback(error)
-        if (status.isDirectory()) {
-          binding.spawnAsAdmin(
-            'cmd',
-            ['/c', 'rmdir', '/s', '/q', filePath],
-            module.exports.testMode,
-            wrapCallback('rmdir', callback)
-          )
+        if (fsAdmin.testMode) {
+          authopen = spawn('/bin/dd', ['of=' + filePath])
         } else {
-          binding.spawnAsAdmin(
-            'cmd',
-            ['/c', 'del', '/f', '/q', filePath],
-            module.exports.testMode,
-            wrapCallback('del', callback)
-          )
+          authopen = spawn('/usr/libexec/authopen', ['-extauth', '-w', '-c', filePath])
+          authopen.stdin.write(binding.getAuthorizationForm())
         }
-      })
-    }
 
-    module.exports.makeTree = function (directoryPath, callback) {
-      binding.spawnAsAdmin(
-        'cmd',
-        ['/c', 'mkdir', filePath],
-        module.exports.testMode,
-        wrapCallback('mkdir', callback)
-      )
-    }
+        const result = new EventEmitter()
 
-    module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
-      binding.spawnAsAdmin(
-        'cmd',
-        ['/c', require.resolve('./src/copy-folder.cmd'), sourcePath, destinationPath],
-        module.exports.testMode,
-        wrapCallback('robocopy', callback)
-      )
-    }
-  }
+        result.write = (chunk, encoding, callback) => {
+          authopen.stdin.write(chunk, encoding, callback)
+        }
+
+        result.end = (callback) => {
+          if (callback) result.on('finish', callback)
+          authopen.stdin.end()
+        }
+
+        authopen.on('exit', (exitCode) => {
+          if (exitCode !== 0) {
+            result.emit('error', new Error('authopen exited with code ' + exitCode))
+          }
+          result.emit('finish')
+        })
+
+        return result
+      },
+
+      symlink (target, filePath, callback) {
+        binding.spawnAsAdmin(
+          '/bin/ln',
+          ['-s', target, filePath],
+          fsAdmin.testMode,
+          wrapCallback('ln', callback)
+        )
+      },
+
+      unlink (filePath, callback) {
+        binding.spawnAsAdmin(
+          '/bin/rm',
+          ['-rf', filePath],
+          fsAdmin.testMode,
+          wrapCallback('rm', callback)
+        )
+      },
+
+      makeTree (directoryPath, callback) {
+        binding.spawnAsAdmin(
+          '/bin/mkdir',
+          ['-p', directoryPath],
+          fsAdmin.testMode,
+          wrapCallback('mkdir', callback)
+        )
+      },
+
+      recursiveCopy (sourcePath, destinationPath, callback) {
+        binding.spawnAsAdmin(
+          '/bin/rm',
+          ['-r', '-f', destinationPath],
+          fsAdmin.testMode,
+          wrapCallback('rm', (error) => {
+            if (error) return callback(error)
+            binding.spawnAsAdmin(
+              '/bin/cp',
+              ['-r', sourcePath, destinationPath],
+              fsAdmin.testMode,
+              wrapCallback('cp', callback)
+            )
+          })
+        )
+      }
+    })
+    break
+
+  case 'win32':
+    Object.assign(fsAdmin, {
+      symlink (target, filePath, callback) {
+        binding.spawnAsAdmin(
+          'cmd',
+          ['/c', 'mklink', '/j', filePath, target],
+          fsAdmin.testMode,
+          wrapCallback('mklink', callback)
+        )
+      },
+
+      unlink (filePath, callback) {
+        fs.stat(filePath, (error, status) => {
+          if (error) return callback(error)
+          if (status.isDirectory()) {
+            binding.spawnAsAdmin(
+              'cmd',
+              ['/c', 'rmdir', '/s', '/q', filePath],
+              fsAdmin.testMode,
+              wrapCallback('rmdir', callback)
+            )
+          } else {
+            binding.spawnAsAdmin(
+              'cmd',
+              ['/c', 'del', '/f', '/q', filePath],
+              fsAdmin.testMode,
+              wrapCallback('del', callback)
+            )
+          }
+        })
+      },
+
+      makeTree (directoryPath, callback) {
+        binding.spawnAsAdmin(
+          'cmd',
+          ['/c', 'mkdir', directoryPath],
+          fsAdmin.testMode,
+          wrapCallback('mkdir', callback)
+        )
+      },
+
+      recursiveCopy (sourcePath, destinationPath, callback) {
+        binding.spawnAsAdmin(
+          'cmd',
+          ['/c', require.resolve('./src/copy-folder.cmd'), sourcePath, destinationPath],
+          fsAdmin.testMode,
+          wrapCallback('robocopy', callback)
+        )
+      }
+    })
+    break
 }
 
 function wrapCallback (commandName, callback) {
