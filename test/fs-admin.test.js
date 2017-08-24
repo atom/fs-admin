@@ -73,6 +73,24 @@ describe('fs-admin', function () {
     })
   })
 
+  describe('makeTree', () => {
+    it('creates a directory at the given path as the admin user', (done) => {
+      const pathToCreate = path.join(dirPath, 'dir1', 'dir2', 'dir3')
+
+      fsAdmin.makeTree(pathToCreate, (error) => {
+        assert.equal(error, null)
+        const stats = fs.statSync(pathToCreate)
+        assert(stats.isDirectory())
+
+        if (process.platform === 'darwin' && !fsAdmin.testMode) {
+          assert.equal(stats.uid, 0)
+        }
+
+        done()
+      })
+    })
+  })
+
   describe('unlink', () => {
     it('deletes the given file as the admin user', (done) => {
       fs.writeFileSync(filePath, '')

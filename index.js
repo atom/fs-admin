@@ -68,6 +68,15 @@ switch (process.platform) {
       )
     }
 
+    module.exports.makeTree = function (directoryPath, callback) {
+      binding.spawnAsAdmin(
+        '/bin/mkdir',
+        ['-p', directoryPath],
+        module.exports.testMode,
+        wrapCallback('mkdir', callback)
+      )
+    }
+
     module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
       binding.spawnAsAdmin(
         '/bin/rm',
@@ -117,6 +126,15 @@ switch (process.platform) {
           )
         }
       })
+    }
+
+    module.exports.makeTree = function (directoryPath, callback) {
+      binding.spawnAsAdmin(
+        'cmd',
+        ['/c', 'mkdir', filePath],
+        module.exports.testMode,
+        wrapCallback('mkdir', callback)
+      )
     }
 
     module.exports.recursiveCopy = function (sourcePath, destinationPath, callback) {
