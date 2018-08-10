@@ -15,7 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "mocha": "^3.5.0",
-    "nan": "^2.6.2"
+    "nan": "^2.10.0"
   },
   "devDependencies": {
     "standard": "^10.0.3",
