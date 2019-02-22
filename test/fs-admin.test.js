@@ -134,7 +134,7 @@ describe('fs-admin', function () {
           assert.strictEqual(fs.lstatSync(filePath).uid, 0)
         }
 
-        assert.strictEqual(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename))
+        assert.strictEqual(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
         done()
       })
     })
@@ -159,8 +159,8 @@ describe('fs-admin', function () {
       }
 
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
-        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
-        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt'), 'utf8'), '1')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt'), 'utf8'), '2')
         assert(!fs.existsSync(path.join(destinationPath, 'other-file.txt')))
         assert.strictEqual(error, null)
         done()
@@ -177,8 +177,8 @@ describe('fs-admin', function () {
       const destinationPath = path.join(dirPath, 'dest-dir')
 
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
-        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
-        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt'), 'utf8'), '1')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt'), 'utf8'), '2')
         assert.strictEqual(error, null)
         done()
       })
