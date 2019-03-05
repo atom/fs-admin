@@ -36,7 +36,7 @@ describe('fs-admin', function () {
       fs.createReadStream(__filename)
         .pipe(fsAdmin.createWriteStream(filePath))
         .on('finish', () => {
-          assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
+          assert.strictEqual(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
           done()
         })
     })
@@ -65,7 +65,7 @@ describe('fs-admin', function () {
           fs.createReadStream(__filename)
             .pipe(fsAdmin.createWriteStream(filePath))
             .on('finish', () => {
-              assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
+              assert.strictEqual(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
               resolve()
             })
         )
@@ -78,12 +78,12 @@ describe('fs-admin', function () {
       const pathToCreate = path.join(dirPath, 'dir1', 'dir2', 'dir3')
 
       fsAdmin.makeTree(pathToCreate, (error) => {
-        assert.equal(error, null)
+        assert.strictEqual(error, null)
         const stats = fs.statSync(pathToCreate)
         assert(stats.isDirectory())
 
         if (process.platform === 'darwin' && !fsAdmin.testMode) {
-          assert.equal(stats.uid, 0)
+          assert.strictEqual(stats.uid, 0)
         }
 
         done()
@@ -102,7 +102,7 @@ describe('fs-admin', function () {
       }
 
       fsAdmin.unlink(filePath, (error) => {
-        assert.equal(error, null)
+        assert.strictEqual(error, null)
         assert(!fs.existsSync(filePath))
         done()
       })
@@ -118,7 +118,7 @@ describe('fs-admin', function () {
       }
 
       fsAdmin.unlink(filePath, (error) => {
-        assert.equal(error, null)
+        assert.strictEqual(error, null)
         assert(!fs.existsSync(filePath))
         done()
       })
@@ -128,13 +128,13 @@ describe('fs-admin', function () {
   describe('symlink', () => {
     it('creates a symlink at the given path as the admin user', (done) => {
       fsAdmin.symlink(__filename, filePath, (error) => {
-        assert.equal(error, null)
+        assert.strictEqual(error, null)
 
         if (!fsAdmin.testMode) {
-          assert.equal(fs.lstatSync(filePath).uid, 0)
+          assert.strictEqual(fs.lstatSync(filePath).uid, 0)
         }
 
-        assert.equal(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename))
+        assert.strictEqual(fs.readFileSync(filePath, 'utf8'), fs.readFileSync(__filename, 'utf8'))
         done()
       })
     })
@@ -159,10 +159,10 @@ describe('fs-admin', function () {
       }
 
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
-        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
-        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt'), 'utf8'), '1')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt'), 'utf8'), '2')
         assert(!fs.existsSync(path.join(destinationPath, 'other-file.txt')))
-        assert.equal(error, null)
+        assert.strictEqual(error, null)
         done()
       })
     })
@@ -177,9 +177,9 @@ describe('fs-admin', function () {
       const destinationPath = path.join(dirPath, 'dest-dir')
 
       fsAdmin.recursiveCopy(sourcePath, destinationPath, (error) => {
-        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt')), '1')
-        assert.equal(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt')), '2')
-        assert.equal(error, null)
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file1.txt'), 'utf8'), '1')
+        assert.strictEqual(fs.readFileSync(path.join(destinationPath, 'dir1', 'file2.txt'), 'utf8'), '2')
+        assert.strictEqual(error, null)
         done()
       })
     })
