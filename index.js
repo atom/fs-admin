@@ -1,5 +1,5 @@
 const fs = require('fs')
-const {spawn} = require('child_process')
+const { spawn } = require('child_process')
 const EventEmitter = require('events')
 const binding = require('./build/Release/fs_admin.node')
 const fsAdmin = module.exports
