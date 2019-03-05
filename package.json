@@ -15,10 +15,10 @@
   "author": "Max Brunsfeld",
   "license": "MIT",
   "dependencies": {
-    "mocha": "^3.5.0",
     "nan": "^2.10.0"
   },
   "devDependencies": {
+    "mocha": "^3.5.0",
     "standard": "^10.0.3",
     "temp": "^0.8.3"
   },
