@@ -23,7 +23,7 @@ public:
 
   void HandleOKCallback() {
     Local<Value> argv[] = {Nan::New<Integer>(exit_code)};
-    callback->Call(1, argv);
+    callback->Call(1, argv, async_resource);
   }
 };
 
@@ -43,7 +43,8 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
     return;
   }
 
-  std::string command(*String::Utf8Value(info[0]));
+  Nan::Utf8String commandNan(info[0]);
+  std::string command(*commandNan, commandNan.length());
 
   if (!info[1]->IsArray()) {
     Nan::ThrowTypeError("Arguments must be an array");
@@ -60,7 +61,7 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
       return;
     }
 
-    args.push_back(std::string(*String::Utf8Value(js_arg)));
+    args.push_back(*Nan::Utf8String(js_arg));
   }
 
   bool test_mode = false;
