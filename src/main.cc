@@ -81,7 +81,7 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Init(Handle<Object> exports) {
+void Init(v8::Local<v8::Object> exports) {
   Nan::SetMethod(exports, "getAuthorizationForm", GetAuthorizationForm);
   Nan::SetMethod(exports, "clearAuthorizationCache", ClearAuthorizationCache);
   Nan::SetMethod(exports, "spawnAsAdmin", SpawnAsAdmin);
