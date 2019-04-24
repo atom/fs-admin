@@ -5,7 +5,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "standard && mocha"
+    "test": "standard && mocha",
+    "postpublish": "git push --follow-tags"
   },
   "keywords": [
     "file",
