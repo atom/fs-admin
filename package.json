@@ -15,7 +15,7 @@
   "author": "Max Brunsfeld",
   "license": "MIT",
   "dependencies": {
-    "nan": "^2.12.1"
+    "nan": "^2.13.2"
   },
   "devDependencies": {
     "mocha": "^6.1.2",
