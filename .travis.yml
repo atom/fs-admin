@@ -13,15 +13,20 @@ sudo: false
 language: node_js
 
 node_js:
-  - "8"
-  - "10"
-  - "11"
   - "12"
+
+services:
+  - docker
 
 env:
   - CC=clang CXX=clang++ npm_config_clang=1
 
-script: npm test
+script:
+  - npm test
+  - npm run prebuild-node
+  - npm run prebuild-electron
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t node-fs-admin/i386 docker/i386 && docker run --rm -v ${PWD}:/project node-fs-admin/i386 /bin/bash -c "cd /project && npm run prebuild-node-ia32 && npm run prebuild-electron-ia32"; fi
+  - if [[ -n "$TRAVIS_TAG" ]]; then npm run upload; fi
 
 branches:
   only:
