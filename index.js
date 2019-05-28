@@ -157,12 +157,17 @@ switch (process.platform) {
       },
 
       createWriteStream (filePath) {
-        // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
-        if (!fsAdmin.testMode && spawnSync('/usr/bin/pkexec', ['/bin/dd']).status !== 0) {
-          const result = new EventEmitter()
-          result.write = result.end = function () {}
-          process.nextTick(() => result.emit('error', new Error('Failed to obtain credentials')))
-          return result
+        if (!fsAdmin.testMode) {
+          // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
+          const noopCommand = spawnSync('/usr/bin/pkexec', ['/bin/dd'])
+          if (noopCommand.error || noopCommand.status !== 0) {
+            const result = new EventEmitter()
+            result.write = result.end = function () {}
+            process.nextTick(() => {
+              result.emit('error', new Error('Failed to obtain credentials'))
+            })
+            return result
+          }
         }
 
         const dd = fsAdmin.testMode
