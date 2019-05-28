@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { spawn } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 const EventEmitter = require('events')
 const binding = require('./build/Release/fs_admin.node')
 const fsAdmin = module.exports
@@ -146,6 +146,45 @@ switch (process.platform) {
           fsAdmin.testMode,
           wrapCallback('robocopy', callback)
         )
+      }
+    })
+    break
+
+  case 'linux':
+    Object.assign(fsAdmin, {
+      clearAuthorizationCache () {
+        spawnSync('/bin/pkcheck', ['--revoke-temp'])
+      },
+
+      createWriteStream (filePath) {
+        // Prompt for credentials synchronously to avoid creating multiple simultaneous prompts.
+        if (!fsAdmin.testMode && spawnSync('/usr/bin/pkexec', ['/bin/dd']).status !== 0) {
+          const result = new EventEmitter()
+          result.write = result.end = function () {}
+          process.nextTick(() => result.emit('error', new Error('Failed to obtain credentials')))
+          return result
+        }
+
+        const dd = fsAdmin.testMode
+          ? spawn('/bin/dd', ['of=' + filePath])
+          : spawn('/usr/bin/pkexec', ['/bin/dd', 'of=' + filePath])
+
+        const stream = new EventEmitter()
+        stream.write = (chunk, encoding, callback) => {
+          dd.stdin.write(chunk, encoding, callback)
+        }
+        stream.end = (callback) => {
+          if (callback) stream.on('finish', callback)
+          dd.stdin.end()
+        }
+        dd.on('exit', (exitCode) => {
+          if (exitCode !== 0) {
+            stream.emit('error', new Error('dd exited with code ' + exitCode))
+          }
+          stream.emit('finish')
+        })
+
+        return stream
       }
     })
     break

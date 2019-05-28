@@ -7,10 +7,6 @@ const fsAdmin = require('..')
 // Comment this out to test with actual privilege escalation.
 fsAdmin.testMode = true
 
-if (process.platform !== 'win32' && process.platform !== 'darwin') {
-  process.exit(0)
-}
-
 describe('fs-admin', function () {
   let dirPath, filePath
 
@@ -23,7 +19,7 @@ describe('fs-admin', function () {
   if (!fsAdmin.testMode) this.timeout(10000)
 
   describe('createWriteStream', () => {
-    if (process.platform !== 'darwin') return
+    if (process.platform === 'win32') return
 
     it('writes to the given file as the admin user', (done) => {
       fs.writeFileSync(filePath, '')
@@ -74,6 +70,8 @@ describe('fs-admin', function () {
   })
 
   describe('makeTree', () => {
+    if (process.platform === 'linux') return
+
     it('creates a directory at the given path as the admin user', (done) => {
       const pathToCreate = path.join(dirPath, 'dir1', 'dir2', 'dir3')
 
@@ -92,6 +90,8 @@ describe('fs-admin', function () {
   })
 
   describe('unlink', () => {
+    if (process.platform === 'linux') return
+
     it('deletes the given file as the admin user', (done) => {
       fs.writeFileSync(filePath, '')
 
@@ -126,6 +126,8 @@ describe('fs-admin', function () {
   })
 
   describe('symlink', () => {
+    if (process.platform === 'linux') return
+
     it('creates a symlink at the given path as the admin user', (done) => {
       fsAdmin.symlink(__filename, filePath, (error) => {
         assert.strictEqual(error, null)
@@ -141,6 +143,8 @@ describe('fs-admin', function () {
   })
 
   describe('recursiveCopy', () => {
+    if (process.platform === 'linux') return
+
     it('copies the given folder to the given location as the admin user', (done) => {
       const sourcePath = path.join(dirPath, 'src-dir')
       fs.mkdirSync(sourcePath)
