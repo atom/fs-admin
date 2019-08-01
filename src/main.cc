@@ -55,7 +55,8 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   std::vector<std::string> args;
   args.reserve(js_args->Length());
   for (uint32_t i = 0; i < js_args->Length(); ++i) {
-    Local<Value> js_arg = js_args->Get(i);
+    Local<Context> context = Nan::GetCurrentContext();
+    Local<Value> js_arg = js_args->Get(context, i).ToLocalChecked();
     if (!js_arg->IsString()) {
       Nan::ThrowTypeError("Arguments must be an array of strings");
       return;
