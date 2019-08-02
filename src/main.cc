@@ -55,7 +55,8 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   std::vector<std::string> args;
   args.reserve(js_args->Length());
   for (uint32_t i = 0; i < js_args->Length(); ++i) {
-    Local<Value> js_arg = js_args->Get(i);
+    Local<Context> context = Nan::GetCurrentContext();
+    Local<Value> js_arg = js_args->Get(context, i).ToLocalChecked();
     if (!js_arg->IsString()) {
       Nan::ThrowTypeError("Arguments must be an array of strings");
       return;
@@ -81,12 +82,16 @@ void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
   }
 }
 
-void Init(v8::Local<v8::Object> exports) {
-  Nan::SetMethod(exports, "getAuthorizationForm", GetAuthorizationForm);
-  Nan::SetMethod(exports, "clearAuthorizationCache", ClearAuthorizationCache);
-  Nan::SetMethod(exports, "spawnAsAdmin", SpawnAsAdmin);
+NAN_MODULE_INIT(Init) {
+  Nan::SetMethod(target, "getAuthorizationForm", GetAuthorizationForm);
+  Nan::SetMethod(target, "clearAuthorizationCache", ClearAuthorizationCache);
+  Nan::SetMethod(target, "spawnAsAdmin", SpawnAsAdmin);
 }
 
+#if NODE_MAJOR_VERSION >= 10
+NAN_MODULE_WORKER_ENABLED(fs_admin, Init)
+#else
 NODE_MODULE(fs_admin, Init)
+#endif
 
 }  // namespace spawn_as_admin
