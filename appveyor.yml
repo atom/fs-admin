@@ -25,4 +25,4 @@ deploy: off
 
 branches:
   only:
-    - master
+    - /master|^v\d+\.\d+\.\d+$/
