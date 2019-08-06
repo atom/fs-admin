@@ -21,6 +21,13 @@
   ],
   "author": "Max Brunsfeld",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atom/fs-admin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atom/fs-admin/issues"
+  },
   "dependencies": {
     "nan": "^2.13.2",
     "prebuild-install": "5.3.0"
