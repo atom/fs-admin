@@ -2,13 +2,9 @@ image: Visual Studio 2015
 
 environment:
   matrix:
-  - nodejs_version: "8"
-  - nodejs_version: "10"
-  - nodejs_version: "11"
   - nodejs_version: "12"
 
 platform:
-  - x86
   - x64
 
 install:
@@ -16,12 +12,16 @@ install:
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version) $env:PLATFORM
   - npm install
 
-test_script:
-  - node --version
-  - npm --version
+build_script:
   - npm test
+  - npm run prebuild-node
+  - npm run prebuild-node-ia32
+  - npm run prebuild-electron
+  - npm run prebuild-electron-ia32
+  - if defined APPVEYOR_REPO_TAG_NAME (npm run upload)
 
-build: off
+test: off
+deploy: off
 
 branches:
   only:
