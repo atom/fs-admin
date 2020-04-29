@@ -1,0 +1,34 @@
+name: "Code Scanning - Action"
+
+on:
+  push:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  CodeQL-Build:
+
+    # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: javascript, cpp
+
+    # Setup dependencies (and build native modules from source)
+    - name: Install dependencies
+      run: npm install
+
+    # Run code analysis
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
