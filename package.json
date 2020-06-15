@@ -33,7 +33,7 @@
     "prebuild-install": "5.3.4"
   },
   "devDependencies": {
-    "mocha": "^7.0.0",
+    "mocha": "^8.0.1",
     "node-abi": "^2.17.0",
     "node-gyp": "^7.0.0",
     "prebuild": "^10.0.0",
