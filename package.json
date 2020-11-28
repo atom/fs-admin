@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "nan": "^2.13.2",
-    "prebuild-install": "5.3.5"
+    "prebuild-install": "^6.0.0"
   },
   "devDependencies": {
     "mocha": "^8.0.1",
