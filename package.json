@@ -1,6 +1,6 @@
 {
   "name": "fs-admin",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Manipulate files with escalated privileges",
   "main": "index.js",
   "types": "index.d.ts",
