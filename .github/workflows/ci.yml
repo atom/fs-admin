@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - v*.*.*
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: ${{ matrix.friendlyName }}
+    env:
+      DISPLAY: ":99.0"
+      CC: "clang"
+      CXX: "clang++"
+      npm_config_clang: "1"
+
+    strategy:
+      matrix:
+        node-version: [15.x]
+        os: [ubuntu-16.04, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-16.04
+            friendlyName: Ubuntu
+          - os: windows-latest
+            friendlyName: Windows
+          - os: macos-latest
+            friendlyName: macOS
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - run: npm install
+      name: Setup environment
+
+    - run: npm test
+      name: Run tests (Windows/macOS)
+
+    - run: |
+        npm run prebuild-node
+        npm run prebuild-electron
+      name: Prebuild (x64)
+
+    - run: |
+        npm run prebuild-electron-arm64
+        npm run prebuild-node-ia32
+        npm run prebuild-electron-ia32
+      if: ${{ matrix.os == 'windows-latest' }}
+      name: Prebuild (Windows x86 + ARM64)
+
+    - run: |
+        mkdir -p prebuilds && chmod 777 prebuilds
+        docker build -t node-fs-admin/i386 docker/i386
+        docker run --rm -v ${PWD}:/project node-fs-admin/i386 /bin/bash -c "cd /project && npm run prebuild-node-ia32 && npm run prebuild-electron-ia32 && rm -rf build"
+        docker build -t node-fs-admin/arm64-cross-compile docker/arm64-cross-compile
+        docker run --rm -v ${PWD}:/project node-fs-admin/arm64-cross-compile /bin/bash -c "cd /project && npm run prebuild-electron-arm64"
+      if: ${{ matrix.os == 'ubuntu-16.04' }}
+      name: Prebuild (Linux x86 + ARM64)
+
+    - run: |
+        ls prebuilds/
+      name: List prebuilds
+
+    - name: Upload prebuilds to GitHub
+      run: npm run upload
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+      env:
+        GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Separate step for publishing to NPM so we're sure that generating + uploading prebuilds worked on all platforms
+  npm-publish:
+    needs: build
+    name: Publish to NPM
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 15
+      uses: actions/setup-node@v1
+      with:
+        node-version: 15.x
+        registry-url: 'https://registry.npmjs.org'
+
+    - run: sudo apt-get install libsecret-1-dev
+      name: Install additional dependencies
+
+    - run: npm install
+      name: Setup environment
+
+    - run: npm publish --access public
+      name: Upload to NPM
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
