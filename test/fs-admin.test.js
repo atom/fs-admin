@@ -127,6 +127,7 @@ describe('fs-admin', function () {
 
   describe('symlink', () => {
     if (process.platform === 'linux') return
+    if (process.platform === 'win32') return
 
     it('creates a symlink at the given path as the admin user', (done) => {
       fsAdmin.symlink(__filename, filePath, (error) => {
