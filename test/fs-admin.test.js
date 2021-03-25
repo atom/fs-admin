@@ -126,6 +126,8 @@ describe('fs-admin', function () {
   })
 
   describe('symlink', () => {
+    // TODO: investigate why these tests are muted and how we could run them
+    //       in an Actions-based environment
     if (process.platform === 'linux') return
     if (process.platform === 'win32') return
 
