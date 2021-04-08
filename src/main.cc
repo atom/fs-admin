@@ -1,18 +1,19 @@
-#include "nan.h"
+#include "napi.h"
+#include "uv.h"
 #include "fs-admin.h"
 
 namespace fs_admin {
 
-using namespace v8;
+using namespace Napi;
 
-class Worker : public Nan::AsyncWorker {
+class Worker : public Napi::AsyncWorker {
   void *child_process;
   int exit_code;
   bool test_mode;
 
 public:
-  Worker(Nan::Callback *callback, void *child_process, bool test_mode) :
-    Nan::AsyncWorker(callback),
+  Worker(const Napi::Env &env, void *child_process, bool test_mode) :
+    Napi::AsyncWorker(env),
     child_process(child_process),
     exit_code(-1),
     test_mode(test_mode) {}
@@ -21,77 +22,76 @@ public:
     exit_code = WaitForChildProcessToExit(child_process, test_mode);
   }
 
-  void HandleOKCallback() {
-    Local<Value> argv[] = {Nan::New<Integer>(exit_code)};
+  void OnOK() {
+    Napi::Value argv[] = {Napi::Number::New(env, exit_code)};
     callback->Call(1, argv, async_resource);
   }
 };
 
-void GetAuthorizationForm(const Nan::FunctionCallbackInfo<Value>& info) {
+void GetAuthorizationForm(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   auto auth_form = CreateAuthorizationForm();
-  auto buffer = Nan::CopyBuffer(auth_form.c_str(), auth_form.size());
-  info.GetReturnValue().Set(buffer.ToLocalChecked());
+  auto buffer = Napi::Buffer::Copy(env, auth_form.c_str(), auth_form.size());
+  return buffer;
 }
 
-void ClearAuthorizationCache(const Nan::FunctionCallbackInfo<Value>& info) {
+void ClearAuthorizationCache(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
   ClearAuthorizationCache();
 }
 
-void SpawnAsAdmin(const Nan::FunctionCallbackInfo<Value>& info) {
-  if (!info[0]->IsString()) {
-    Nan::ThrowTypeError("Command must be a string");
-    return;
+void SpawnAsAdmin(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  if (!info[0].IsString()) {
+    Napi::TypeError::New(env, "Command must be a string").ThrowAsJavaScriptException();
+    return env.Null();
   }
 
-  Nan::Utf8String commandNan(info[0]);
-  std::string command(*commandNan, commandNan.length());
+  std::string commandNan = info[0].As<Napi::String>();
+  std::string command(*commandNan, commandNan.Length());
 
-  if (!info[1]->IsArray()) {
-    Nan::ThrowTypeError("Arguments must be an array");
-    return;
+  if (!info[1].IsArray()) {
+    Napi::TypeError::New(env, "Arguments must be an array").ThrowAsJavaScriptException();
+    return env.Null();
   }
 
-  Local<Array> js_args = Local<Array>::Cast(info[1]);
+  Napi::Array js_args = info[1].As<Napi::Array>();
   std::vector<std::string> args;
   args.reserve(js_args->Length());
   for (uint32_t i = 0; i < js_args->Length(); ++i) {
-    Local<Context> context = Nan::GetCurrentContext();
-    Local<Value> js_arg = js_args->Get(context, i).ToLocalChecked();
-    if (!js_arg->IsString()) {
-      Nan::ThrowTypeError("Arguments must be an array of strings");
-      return;
+    Local<Context> context = Napi::GetCurrentContext();
+    Napi::Value js_arg = js_args->Get(context, i);
+    if (!js_arg.IsString()) {
+      Napi::TypeError::New(env, "Arguments must be an array of strings").ThrowAsJavaScriptException();
+      return env.Null();
     }
 
-    args.push_back(*Nan::Utf8String(js_arg));
+    args.push_back(js_arg->As<Napi::String>().Utf8Value().c_str());
   }
 
   bool test_mode = false;
-  if (info[2]->IsTrue()) test_mode = true;
+  if (info[2].IsTrue()) test_mode = true;
 
-  if (!info[3]->IsFunction()) {
-    Nan::ThrowTypeError("Callback must be a function");
-    return;
+  if (!info[3].IsFunction()) {
+    Napi::TypeError::New(env, "Callback must be a function").ThrowAsJavaScriptException();
+    return env.Null();
   }
 
   void *child_process = StartChildProcess(command, args, test_mode);
   if (!child_process) {
-    info.GetReturnValue().Set(Nan::False());
+    return env.False();
   } else {
-    Nan::AsyncQueueWorker(new Worker(new Nan::Callback(info[3].As<Function>()), child_process, test_mode));
-    info.GetReturnValue().Set(Nan::True());
+    new Worker(new Napi::FunctionReference(info[3].As<Napi::Function>()), child_process, test_mode).Queue();
+    return env.True();
   }
 }
 
-NAN_MODULE_INIT(Init) {
-  Nan::SetMethod(target, "getAuthorizationForm", GetAuthorizationForm);
-  Nan::SetMethod(target, "clearAuthorizationCache", ClearAuthorizationCache);
-  Nan::SetMethod(target, "spawnAsAdmin", SpawnAsAdmin);
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  exports.Set(Napi::String::New(env, "getAuthorizationForm"), Napi::Function::New(env, GetAuthorizationForm));
+  exports.Set(Napi::String::New(env, "clearAuthorizationCache"), Napi::Function::New(env, ClearAuthorizationCache));
+  exports.Set(Napi::String::New(env, "spawnAsAdmin"), Napi::Function::New(env, SpawnAsAdmin));
 }
 
-#if NODE_MAJOR_VERSION >= 10
-NAN_MODULE_WORKER_ENABLED(fs_admin, Init)
-#else
-NODE_MODULE(fs_admin, Init)
-#endif
+NODE_API_MODULE(fs_admin, Init)
 
 }  // namespace spawn_as_admin

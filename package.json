@@ -29,7 +29,7 @@
     "url": "https://github.com/atom/fs-admin/issues"
   },
   "dependencies": {
-    "nan": "^2.13.2",
+    "node-addon-api": "^3.1.0",
     "prebuild-install": "^6.0.0"
   },
   "devDependencies": {
