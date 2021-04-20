@@ -13,6 +13,9 @@
   'targets': [
     {
       'target_name': 'fs_admin',
+      'defines': [
+        "NAPI_VERSION=<(napi_build_version)",
+      ],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
       'xcode_settings': { 'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
