@@ -86,6 +86,6 @@ int WaitForChildProcessToExit(void *child_process, bool test_mode) {
 }
 
 std::string CreateAuthorizationForm() { return ""; }
-void ClearAuthorizationCache() {}
+void ClearAuthorizationCacheImpl() {}
 
 }  // namespace fs_admin

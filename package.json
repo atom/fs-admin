@@ -8,10 +8,9 @@
     "test": "standard && mocha",
     "install": "prebuild-install || npm run build",
     "build": "node-gyp rebuild",
-    "prebuild-node": "prebuild -t 10.11.0 -t 11.9.0 -t 12.0.0 -t 14.0.0 -t 15.0.0 --strip",
-    "prebuild-electron": "prebuild -t 10.0.0 -t 11.0.0 -t 12.0.0 -r electron --strip",
-    "prebuild-electron-ia32": "prebuild -t 10.0.0 -t 11.0.0 -t 12.0.0 -r electron -a ia32 --strip",
-    "prebuild-electron-arm64": "prebuild -t 10.0.0 -t 11.0.0 -t 12.0.0 -r electron -a arm64 --strip",
+    "prebuild-napi-x64": "prebuild -t 3 -r napi -a x64 --strip",
+    "prebuild-napi-ia32": "prebuild -t 3 -r napi -a ia32 --strip",
+    "prebuild-napi-arm64": "prebuild -t 3 -r napi -a arm64 --strip",
     "upload": "node ./script/upload.js"
   },
   "keywords": [
@@ -29,16 +28,24 @@
     "url": "https://github.com/atom/fs-admin/issues"
   },
   "dependencies": {
-    "nan": "^2.13.2",
+    "node-addon-api": "^3.1.0",
     "prebuild-install": "^6.0.0"
   },
   "devDependencies": {
     "mocha": "^8.0.1",
-    "node-abi": "^2.17.0",
-    "node-gyp": "^8.0.0",
-    "prebuild": "^10.0.0",
+    "node-gyp": "^7.0.0",
+    "prebuild": "^10.0.1",
     "standard": "^16.0.1",
     "temp": "^0.9.0"
+  },
+  "binary": {
+    "napi_versions": [
+      3
+    ]
+  },
+  "config": {
+    "runtime": "napi",
+    "target": 3
   },
   "standard": {
     "globals": [
