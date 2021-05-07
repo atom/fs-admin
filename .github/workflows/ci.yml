@@ -20,11 +20,12 @@ jobs:
       SDKROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [15.x]
-        os: [ubuntu-16.04, windows-latest, macos-latest]
+        os: [ubuntu-18.04, windows-latest, macos-latest]
         include:
-          - os: ubuntu-16.04
+          - os: ubuntu-18.04
             friendlyName: Ubuntu
           - os: windows-latest
             friendlyName: Windows
@@ -63,7 +64,7 @@ jobs:
 
       - run: npm run prebuild-napi-arm64
         name: Prebuild (arm64)
-        if: ${{ matrix.os != 'ubuntu-16.04' }}
+        if: ${{ matrix.os != 'ubuntu-18.04' }}
 
       - run: npm run prebuild-napi-ia32
         if: ${{ matrix.os == 'windows-latest' }}
@@ -75,7 +76,7 @@ jobs:
           docker run --rm -v ${PWD}:/project node-fs-admin/i386 /bin/bash -c "cd /project && npm run prebuild-napi-ia32 && rm -rf build"
           docker build -t node-fs-admin/arm64-cross-compile docker/arm64-cross-compile
           docker run --rm -v ${PWD}:/project node-fs-admin/arm64-cross-compile /bin/bash -c "cd /project && npm run prebuild-napi-arm64"
-        if: ${{ matrix.os == 'ubuntu-16.04' }}
+        if: ${{ matrix.os == 'ubuntu-18.04' }}
         name: Prebuild (Linux x86 + ARM64)
 
       - run: |
