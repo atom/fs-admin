@@ -52,6 +52,9 @@ jobs:
       - run: npm install
         name: Setup environment
 
+      - run: npm run build
+        name: Build native module from source
+
       - run: npm test
         name: Run tests (Windows/macOS)
 
