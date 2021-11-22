@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "node-addon-api": "^4.2.0",
-    "prebuild-install": "^6.0.0"
+    "prebuild-install": "^7.0.0"
   },
   "devDependencies": {
     "mocha": "^8.0.1",
