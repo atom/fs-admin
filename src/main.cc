@@ -77,11 +77,11 @@ Napi::Value SpawnAsAdmin(const Napi::CallbackInfo& info) {
 
   void *child_process = StartChildProcess(command, args, test_mode);
   if (!child_process) {
-    return Napi::Number::New(env, false);
+    return Napi::Boolean::New(env, false);
   } else {
     auto worker = new Worker(info[3].As<Napi::Function>(), child_process, test_mode);
     worker->Queue();
-    return Napi::Number::New(env, true);
+    return Napi::Boolean::New(env, true);
   }
 }
 
